@@ -337,7 +337,7 @@ border-color: rgb(80, 80, 80);
     <bool>true</bool>
    </property>
   </widget>
-  <widget class="QPushButton" name="btn_Apply">
+  <widget class="QPushButton" name="btn_Revert">
    <property name="geometry">
     <rect>
      <x>6</x>
@@ -367,10 +367,10 @@ background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgb
 }</string>
    </property>
    <property name="text">
-    <string>apply</string>
+    <string>revert</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="btn_Cancel">
+  <widget class="QPushButton" name="btn_Close">
    <property name="geometry">
     <rect>
      <x>125</x>
@@ -400,7 +400,7 @@ background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgb
 }</string>
    </property>
    <property name="text">
-    <string>cancel</string>
+    <string>close</string>
    </property>
   </widget>
   <widget class="QFrame" name="frame_RGBA">
@@ -474,8 +474,8 @@ background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgb
   <zorder>btn_R</zorder>
   <zorder>btn_A</zorder>
   <zorder>btn_G</zorder>
-  <zorder>btn_Apply</zorder>
-  <zorder>btn_Cancel</zorder>
+  <zorder>btn_Revert</zorder>
+  <zorder>btn_Close</zorder>
   <zorder>btn_PaintTool</zorder>
  </widget>
  <resources/>

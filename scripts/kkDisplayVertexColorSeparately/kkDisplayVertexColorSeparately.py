@@ -56,6 +56,7 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 	jobNum_attributeChange_G = 0
 	jobNum_attributeChange_B = 0
 	jobNum_attributeChange_A = 0
+	jobNum_attributeChange_Base = 0
 
 	jobNum_nodeDeleted_R = 0
 	jobNum_nodeDeleted_G = 0
@@ -66,8 +67,9 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 
 	callbackID_nameChanged = None
 
-	baseColorSet    = ""
-	baseColorSerRep = "RGBA"
+	baseColorSet        = ""
+	baseColorSerRep     = "RGBA"
+	baseColorBeforeEdit = None
 
 	attrDispColor  = 0
 	pOption_matChl = ""
@@ -150,7 +152,7 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 
 		self.baseColorSet = curColorSet
 		self.baseColorSerRep = mc.polyColorSet(q=True, currentColorSet=True, representation=True)
-
+		self.baseColorBeforeEdit = self.targetObjMesh.getVertexColors(self.baseColorSet)
 
 		# self.baseColorSerRepで得たベースのcolorSetの種類を元に各色を表現するためのtempのcolorSetを追加
 		self.checkColorSet()
@@ -167,6 +169,23 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 
 		# 別シーンが開かれたらウィンドウを閉じるscriptJobを登録する
 		self.otherSceneOpenedJob()
+
+
+		if self.hasIntermediateObject == True:
+			self.jobNum_attributeChange_Base = mc.scriptJob(
+				attributeChange=["tmpColorSet_Base_Node.vertexColor", self.vtxColBase],
+				allChildren=True,
+				parent="kkDisplayVertexColorSeparatelyWindow",
+				compressUndo=True,
+				runOnce=True)
+
+		else:
+			self.jobNum_attributeChange_Base = mc.scriptJob(
+				attributeChange=["%s.colorSet"%self.targetObjMesh.fullPathName(), self.vtxColBase],
+				allChildren=True,
+				parent="kkDisplayVertexColorSeparatelyWindow",
+				compressUndo=True,
+				runOnce=True)
 
 
 	#==============================================================================================
@@ -305,11 +324,11 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 		else:
 			self.uiFIle.btn_A.setEnabled(False)
 
-		self.uiFIle.btn_Apply.clicked.connect(self.apply)
+		self.uiFIle.btn_Revert.clicked.connect(self.revert)
 
 		self.uiFIle.btn_PaintTool.clicked.connect(self.selectPaintTool)
 
-		self.uiFIle.btn_Cancel.clicked.connect(self.close)
+		self.uiFIle.btn_Close.clicked.connect(self.close)
 
 
 	#==============================================================================================
@@ -356,10 +375,8 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 			self.uiFIle.btn_R.setGeometry(self.btn_R_checkOffRect)
 
 			# RGBAすべてOFFの場合ベースのcolorSetに戻す
-			if self.uiFIle.btn_R.isChecked() == False and\
-				self.uiFIle.btn_G.isChecked() == False and\
-				self.uiFIle.btn_B.isChecked() == False and\
-				self.uiFIle.btn_A.isChecked() == False:
+			if self.uiFIle.btn_R.isChecked() == False and self.uiFIle.btn_G.isChecked() == False and\
+				self.uiFIle.btn_B.isChecked() == False and self.uiFIle.btn_A.isChecked() == False:
 				self.targetObjMesh.setCurrentColorSetName(self.baseColorSet)
 
 
@@ -407,10 +424,8 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 			self.uiFIle.btn_G.setGeometry(self.btn_G_checkOffRect)
 
 			# RGBAすべてOFFの場合ベースのcolorSetに戻す
-			if self.uiFIle.btn_R.isChecked() == False and\
-				self.uiFIle.btn_G.isChecked() == False and\
-				self.uiFIle.btn_B.isChecked() == False and\
-				self.uiFIle.btn_A.isChecked() == False:
+			if self.uiFIle.btn_R.isChecked() == False and self.uiFIle.btn_G.isChecked() == False and\
+				self.uiFIle.btn_B.isChecked() == False and self.uiFIle.btn_A.isChecked() == False:
 				self.targetObjMesh.setCurrentColorSetName(self.baseColorSet)
 
 
@@ -458,10 +473,8 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 			self.uiFIle.btn_B.setGeometry(self.btn_B_checkOffRect)
 
 			# RGBAすべてOFFの場合ベースのcolorSetに戻す
-			if self.uiFIle.btn_R.isChecked() == False and\
-				self.uiFIle.btn_G.isChecked() == False and\
-				self.uiFIle.btn_B.isChecked() == False and\
-				self.uiFIle.btn_A.isChecked() == False:
+			if self.uiFIle.btn_R.isChecked() == False and self.uiFIle.btn_G.isChecked() == False and\
+				self.uiFIle.btn_B.isChecked() == False and self.uiFIle.btn_A.isChecked() == False:
 				self.targetObjMesh.setCurrentColorSetName(self.baseColorSet)
 
 
@@ -510,18 +523,21 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 			self.uiFIle.btn_A.setGeometry(10, 205, 180, 40)
 
 			# RGBAすべてOFFの場合ベースのcolorSetに戻す
-			if self.uiFIle.btn_R.isChecked() == False and\
-				self.uiFIle.btn_G.isChecked() == False and\
-				self.uiFIle.btn_B.isChecked() == False and\
-				self.uiFIle.btn_A.isChecked() == False:
+			if self.uiFIle.btn_R.isChecked() == False and self.uiFIle.btn_G.isChecked() == False and\
+				self.uiFIle.btn_B.isChecked() == False and self.uiFIle.btn_A.isChecked() == False:
 				self.targetObjMesh.setCurrentColorSetName(self.baseColorSet)
 
 
 	#==============================================================================================
-	# applyのボタンがクリックされたときの処理を設定
-	def apply(self):
-		self.mergeColorSet()
-		self.close()
+	# revertのボタンがクリックされたときの処理を設定
+	def revert(self):
+		vtxCount = self.targetObjMesh.numVertices
+		if not self.targetObjVtxCount == vtxCount:
+			self.targetObjVtxIdxList = xrange(vtxCount)
+
+		self.targetObjMesh.setVertexColors(self.baseColorBeforeEdit, self.targetObjVtxIdxList)
+
+		self.getBaseVertexColorData()
 
 
 	#==============================================================================================
@@ -534,19 +550,34 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 	# tmpColorSet_RのvertexColorのattributeChangeによるscriptJobの処理を設定
 	@openCloseChunk
 	def vtxColSep_R(self):
-		self.targetObjMesh.setCurrentColorSetName("tmpColorSet_R")
-		vtxColors_tmpColorSet_R = self.targetObjMesh.getVertexColors("tmpColorSet_R")
+		if self.uiFIle.btn_R.isChecked() == False:
 
-		vtxCount = self.targetObjMesh.numVertices
-		if not self.targetObjVtxCount == vtxCount:
-			self.targetObjVtxIdxList = xrange(vtxCount)
+			self.targetObjMesh.setCurrentColorSetName("tmpColorSet_R")
+			vtxColors_tmpColorSet_R = self.targetObjMesh.getVertexColors("tmpColorSet_R")
 
-		for x in xrange(vtxCount):
-			vtxColors_tmpColorSet_R[x].r = vtxColors_tmpColorSet_R[x].r
-			vtxColors_tmpColorSet_R[x].g = vtxColors_tmpColorSet_R[x].r
-			vtxColors_tmpColorSet_R[x].b = vtxColors_tmpColorSet_R[x].r
+			baseVtxColors_Edit_R = self.targetObjMesh.getVertexColors(self.baseColorSet)
 
-		self.targetObjMesh.setVertexColors(vtxColors_tmpColorSet_R, self.targetObjVtxIdxList)
+			vtxCount = self.targetObjMesh.numVertices
+			if not self.targetObjVtxCount == vtxCount:
+				self.targetObjVtxIdxList = xrange(vtxCount)
+
+			for x in xrange(vtxCount):
+				vtxColors_tmpColorSet_R[x].r = vtxColors_tmpColorSet_R[x].r
+				vtxColors_tmpColorSet_R[x].g = vtxColors_tmpColorSet_R[x].r
+				vtxColors_tmpColorSet_R[x].b = vtxColors_tmpColorSet_R[x].r
+
+				# 変更のあったRをベースに反映するために上書き
+				baseVtxColors_Edit_R[x].r = vtxColors_tmpColorSet_R[x].r
+
+			self.targetObjMesh.setVertexColors(vtxColors_tmpColorSet_R, self.targetObjVtxIdxList)
+
+			# colorSetをベースに変更して、ベースに色を反映する
+			self.targetObjMesh.setCurrentColorSetName(self.baseColorSet)
+			self.targetObjMesh.setVertexColors(baseVtxColors_Edit_R, self.targetObjVtxIdxList)
+
+			# colorSetを戻しておく
+			self.targetObjMesh.setCurrentColorSetName("tmpColorSet_R")
+
 
 		if self.hasIntermediateObject == True:
 			self.jobNum_attributeChange_R = mc.scriptJob(
@@ -569,19 +600,34 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 	# tmpColorSet_GのvertexColorのattributeChangeによるscriptJobの処理を設定
 	@openCloseChunk
 	def vtxColSep_G(self):
-		self.targetObjMesh.setCurrentColorSetName("tmpColorSet_G")
-		vtxColors_tmpColorSet_G = self.targetObjMesh.getVertexColors("tmpColorSet_G")
+		if self.uiFIle.btn_G.isChecked() == True:
 
-		vtxCount = self.targetObjMesh.numVertices
-		if not self.targetObjVtxCount == vtxCount:
-			self.targetObjVtxIdxList = xrange(vtxCount)
+			self.targetObjMesh.setCurrentColorSetName("tmpColorSet_G")
+			vtxColors_tmpColorSet_G = self.targetObjMesh.getVertexColors("tmpColorSet_G")
 
-		for x in xrange(vtxCount):
-			vtxColors_tmpColorSet_G[x].r = vtxColors_tmpColorSet_G[x].r
-			vtxColors_tmpColorSet_G[x].g = vtxColors_tmpColorSet_G[x].r
-			vtxColors_tmpColorSet_G[x].b = vtxColors_tmpColorSet_G[x].r
+			baseVtxColors_Edit_G = self.targetObjMesh.getVertexColors(self.baseColorSet)
 
-		self.targetObjMesh.setVertexColors(vtxColors_tmpColorSet_G, self.targetObjVtxIdxList)
+			vtxCount = self.targetObjMesh.numVertices
+			if not self.targetObjVtxCount == vtxCount:
+				self.targetObjVtxIdxList = xrange(vtxCount)
+
+			for x in xrange(vtxCount):
+				vtxColors_tmpColorSet_G[x].r = vtxColors_tmpColorSet_G[x].r
+				vtxColors_tmpColorSet_G[x].g = vtxColors_tmpColorSet_G[x].r
+				vtxColors_tmpColorSet_G[x].b = vtxColors_tmpColorSet_G[x].r
+
+				# 変更のあったGをベースに反映するために上書き
+				baseVtxColors_Edit_G[x].g = vtxColors_tmpColorSet_G[x].g
+
+			self.targetObjMesh.setVertexColors(vtxColors_tmpColorSet_G, self.targetObjVtxIdxList)
+
+			# colorSetをベースに変更して、ベースに色を反映する
+			self.targetObjMesh.setCurrentColorSetName(self.baseColorSet)
+			self.targetObjMesh.setVertexColors(baseVtxColors_Edit_G, self.targetObjVtxIdxList)
+
+			# colorSetを戻しておく
+			self.targetObjMesh.setCurrentColorSetName("tmpColorSet_G")
+
 
 		if self.hasIntermediateObject == True:
 			self.jobNum_attributeChange_G = mc.scriptJob(
@@ -604,19 +650,34 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 	# tmpColorSet_BのvertexColorのattributeChangeによるscriptJobの処理を設定
 	@openCloseChunk
 	def vtxColSep_B(self):
-		self.targetObjMesh.setCurrentColorSetName("tmpColorSet_B")
-		vtxColors_tmpColorSet_B = self.targetObjMesh.getVertexColors("tmpColorSet_B")
+		if self.uiFIle.btn_B.isChecked() == True:
 
-		vtxCount = self.targetObjMesh.numVertices
-		if not self.targetObjVtxCount == vtxCount:
-			self.targetObjVtxIdxList = xrange(vtxCount)
+			self.targetObjMesh.setCurrentColorSetName("tmpColorSet_B")
+			vtxColors_tmpColorSet_B = self.targetObjMesh.getVertexColors("tmpColorSet_B")
 
-		for x in xrange(vtxCount):
-			vtxColors_tmpColorSet_B[x].r = vtxColors_tmpColorSet_B[x].r
-			vtxColors_tmpColorSet_B[x].g = vtxColors_tmpColorSet_B[x].r
-			vtxColors_tmpColorSet_B[x].b = vtxColors_tmpColorSet_B[x].r
+			baseVtxColors_Edit_B = self.targetObjMesh.getVertexColors(self.baseColorSet)
 
-		self.targetObjMesh.setVertexColors(vtxColors_tmpColorSet_B, self.targetObjVtxIdxList)
+			vtxCount = self.targetObjMesh.numVertices
+			if not self.targetObjVtxCount == vtxCount:
+				self.targetObjVtxIdxList = xrange(vtxCount)
+
+			for x in xrange(vtxCount):
+				vtxColors_tmpColorSet_B[x].r = vtxColors_tmpColorSet_B[x].r
+				vtxColors_tmpColorSet_B[x].g = vtxColors_tmpColorSet_B[x].r
+				vtxColors_tmpColorSet_B[x].b = vtxColors_tmpColorSet_B[x].r
+
+				# 変更のあったBをベースに反映するために上書き
+				baseVtxColors_Edit_B[x].b = vtxColors_tmpColorSet_B[x].b
+
+			self.targetObjMesh.setVertexColors(vtxColors_tmpColorSet_B, self.targetObjVtxIdxList)
+
+			# colorSetをベースに変更して、ベースに色を反映する
+			self.targetObjMesh.setCurrentColorSetName(self.baseColorSet)
+			self.targetObjMesh.setVertexColors(baseVtxColors_Edit_B, self.targetObjVtxIdxList)
+
+			# colorSetを戻しておく
+			self.targetObjMesh.setCurrentColorSetName("tmpColorSet_B")
+
 
 		if self.hasIntermediateObject == True:
 			self.jobNum_attributeChange_B = mc.scriptJob(
@@ -639,19 +700,34 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 	# tmpColorSet_AのvertexColorのattributeChangeによるscriptJobの処理を設定
 	@openCloseChunk
 	def vtxColSep_A(self):
-		self.targetObjMesh.setCurrentColorSetName("tmpColorSet_A")
-		vtxColors_tmpColorSet_A = self.targetObjMesh.getVertexColors("tmpColorSet_A")
+		if self.uiFIle.btn_A.isChecked() == True:
 
-		vtxCount = self.targetObjMesh.numVertices
-		if not self.targetObjVtxCount == vtxCount:
-			self.targetObjVtxIdxList = xrange(vtxCount)
+			self.targetObjMesh.setCurrentColorSetName("tmpColorSet_A")
+			vtxColors_tmpColorSet_A = self.targetObjMesh.getVertexColors("tmpColorSet_A")
 
-		for x in xrange(vtxCount):
-			vtxColors_tmpColorSet_A[x].r = vtxColors_tmpColorSet_A[x].r
-			vtxColors_tmpColorSet_A[x].g = vtxColors_tmpColorSet_A[x].r
-			vtxColors_tmpColorSet_A[x].b = vtxColors_tmpColorSet_A[x].r
+			baseVtxColors_Edit_A = self.targetObjMesh.getVertexColors(self.baseColorSet)
 
-		self.targetObjMesh.setVertexColors(vtxColors_tmpColorSet_A, self.targetObjVtxIdxList)
+			vtxCount = self.targetObjMesh.numVertices
+			if not self.targetObjVtxCount == vtxCount:
+				self.targetObjVtxIdxList = xrange(vtxCount)
+
+			for x in xrange(vtxCount):
+				vtxColors_tmpColorSet_A[x].r = vtxColors_tmpColorSet_A[x].r
+				vtxColors_tmpColorSet_A[x].g = vtxColors_tmpColorSet_A[x].r
+				vtxColors_tmpColorSet_A[x].b = vtxColors_tmpColorSet_A[x].r
+
+				# 変更のあったBをベースに反映するために上書き
+				baseVtxColors_Edit_A[x].a = vtxColors_tmpColorSet_A[x].a
+
+			self.targetObjMesh.setVertexColors(vtxColors_tmpColorSet_A, self.targetObjVtxIdxList)
+
+			# colorSetをベースに変更して、ベースに色を反映する
+			self.targetObjMesh.setCurrentColorSetName(self.baseColorSet)
+			self.targetObjMesh.setVertexColors(baseVtxColors_Edit_A, self.targetObjVtxIdxList)
+
+			# colorSetを戻しておく
+			self.targetObjMesh.setCurrentColorSetName("tmpColorSet_A")
+
 
 		if self.hasIntermediateObject == True:
 			self.jobNum_attributeChange_A = mc.scriptJob(
@@ -664,6 +740,33 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 		else:
 			self.jobNum_attributeChange_A = mc.scriptJob(
 				attributeChange=["%s.colorSet"%self.targetObjMesh.fullPathName(), self.vtxColSep_A],
+				allChildren=True,
+				parent="kkDisplayVertexColorSeparatelyWindow",
+				compressUndo=True,
+				runOnce=True)
+
+
+	#==============================================================================================
+	# ベースのvertexColorのattributeChangeによるscriptJobの処理を設定
+	@openCloseChunk
+	def vtxColBase(self):
+		# RGBAすべてOFFの場合ベースのcolorSetに戻す
+		if self.uiFIle.btn_R.isChecked() == False and self.uiFIle.btn_G.isChecked() == False and\
+			self.uiFIle.btn_B.isChecked() == False and self.uiFIle.btn_A.isChecked() == False:
+
+			self.getBaseVertexColorData()
+
+		if self.hasIntermediateObject == True:
+			self.jobNum_attributeChange_Base = mc.scriptJob(
+				attributeChange=["tmpColorSet_Base_Node.vertexColor", self.vtxColBase],
+				allChildren=True,
+				parent="kkDisplayVertexColorSeparatelyWindow",
+				compressUndo=True,
+				runOnce=True)
+
+		else:
+			self.jobNum_attributeChange_Base = mc.scriptJob(
+				attributeChange=["%s.colorSet"%self.targetObjMesh.fullPathName(), self.vtxColBase],
 				allChildren=True,
 				parent="kkDisplayVertexColorSeparatelyWindow",
 				compressUndo=True,
@@ -779,15 +882,22 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 				baseVtxColors_A[w].b = baseVtxColors_A[w].a
 			self.targetObjMesh.setVertexColors(baseVtxColors_A, self.targetObjVtxIdxList)
 
+		# colorSetをベースに戻しておく
+		self.targetObjMesh.setCurrentColorSetName(self.baseColorSet)
 
-		# self.hasIntermediateObject == Trueの場合、polyColorPerVertexが生成されているので、
-		# シーン内polyColorPerVertexノードリストを回して、colorSetNameがtmpColorSet～の場合リネームしておく
+
 		if self.hasIntermediateObject == True:
+			# tmpColorSet_Base_Nodeがない場合、baseColor変更感知用のpolyColorPerVertexを作っておく
+			if len(mc.ls("tmpColorSet_Base_Node", type="polyColorPerVertex")) == 0:
+				self.targetObjMesh.setCurrentColorSetName(self.baseColorSet)
+				self.targetObjMesh.setVertexColors(baseVtxColors, self.targetObjVtxIdxList)
+
+
 			polyColorVertexNodeList = mc.ls(type="polyColorPerVertex")
 
 			for polyColorVertexNode in polyColorVertexNodeList:
 				colorSetName = mc.getAttr("%s.colorSetName"%polyColorVertexNode)
-				print("polyColorVertexNode = %s"%polyColorVertexNode)
+
 				if "tmpColorSet_R" in colorSetName:
 					mc.rename(polyColorVertexNode, "tmpColorSet_R_Node")
 
@@ -800,9 +910,11 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 				elif "tmpColorSet_A" in colorSetName:
 					mc.rename(polyColorVertexNode, "tmpColorSet_A_Node")
 
+				elif self.baseColorSet in colorSetName:
+					mc.rename(polyColorVertexNode, "tmpColorSet_Base_Node")
 
-		# colorSetをベースに戻しておく
-		self.targetObjMesh.setCurrentColorSetName(self.baseColorSet)
+
+
 
 
 	#==============================================================================================
