@@ -550,7 +550,7 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 	# tmpColorSet_RのvertexColorのattributeChangeによるscriptJobの処理を設定
 	@openCloseChunk
 	def vtxColSep_R(self):
-		if self.uiFIle.btn_R.isChecked() == False:
+		if self.uiFIle.btn_R.isChecked() == True:
 
 			self.targetObjMesh.setCurrentColorSetName("tmpColorSet_R")
 			vtxColors_tmpColorSet_R = self.targetObjMesh.getVertexColors("tmpColorSet_R")
