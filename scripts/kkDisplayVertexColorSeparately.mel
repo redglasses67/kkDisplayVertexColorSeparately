@@ -1,0 +1,4 @@
+global proc kkDisplayVertexColorSeparately()
+{
+	python("from kkDisplayVertexColorSeparately import kkDisplayVertexColorSeparately\nkkDisplayVertexColorSeparately.main()");
+}
