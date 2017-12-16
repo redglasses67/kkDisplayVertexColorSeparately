@@ -130,7 +130,7 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 		# colorMaterialChannelとmaterialBlendを取得して残しておきつつ変更する
 		self.pOption_matChl = mc.polyOptions(q=True, colorMaterialChannel=True, gl=False)[0]
 		self.pOption_matBld = mc.polyOptions(q=True, materialBlend=True, gl=False)[0]
-		mc.polyOptions(colorMaterialChannel="none", gl=False)
+		mc.polyOptions(colorMaterialChannel="ambientDiffuse", gl=False)
 		mc.polyOptions(materialBlend="overwrite", gl=False)
 
 
@@ -617,7 +617,7 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 				vtxColors_tmpColorSet_G[x].b = vtxColors_tmpColorSet_G[x].r
 
 				# 変更のあったGをベースに反映するために上書き
-				baseVtxColors_Edit_G[x].g = vtxColors_tmpColorSet_G[x].g
+				baseVtxColors_Edit_G[x].g = vtxColors_tmpColorSet_G[x].r
 
 			self.targetObjMesh.setVertexColors(vtxColors_tmpColorSet_G, self.targetObjVtxIdxList)
 
@@ -667,7 +667,7 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 				vtxColors_tmpColorSet_B[x].b = vtxColors_tmpColorSet_B[x].r
 
 				# 変更のあったBをベースに反映するために上書き
-				baseVtxColors_Edit_B[x].b = vtxColors_tmpColorSet_B[x].b
+				baseVtxColors_Edit_B[x].b = vtxColors_tmpColorSet_B[x].r
 
 			self.targetObjMesh.setVertexColors(vtxColors_tmpColorSet_B, self.targetObjVtxIdxList)
 
@@ -717,7 +717,7 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 				vtxColors_tmpColorSet_A[x].b = vtxColors_tmpColorSet_A[x].r
 
 				# 変更のあったBをベースに反映するために上書き
-				baseVtxColors_Edit_A[x].a = vtxColors_tmpColorSet_A[x].a
+				baseVtxColors_Edit_A[x].a = vtxColors_tmpColorSet_A[x].r
 
 			self.targetObjMesh.setVertexColors(vtxColors_tmpColorSet_A, self.targetObjVtxIdxList)
 
@@ -912,54 +912,6 @@ class kkDisplayVertexColorSeparatelyWindow(MayaQWidgetBaseMixin, QMainWindow):
 
 				elif self.baseColorSet in colorSetName:
 					mc.rename(polyColorVertexNode, "tmpColorSet_Base_Node")
-
-
-
-
-
-	#==============================================================================================
-	# 各tmpColorSetに設定していたColorを取得して、ベースのcolorSetにセットする
-	@openCloseChunk
-	def mergeColorSet(self):
-		if self.baseColorSerRep == "RGB" or self.baseColorSerRep == "RGBA":
-			vtxColors_R = self.targetObjMesh.getVertexColors("tmpColorSet_R")
-			vtxColors_G = self.targetObjMesh.getVertexColors("tmpColorSet_G")
-			vtxColors_B = self.targetObjMesh.getVertexColors("tmpColorSet_B")
-
-		if self.baseColorSerRep == "RGBA" or self.baseColorSerRep == "A":
-			vtxColors_A = self.targetObjMesh.getVertexColors("tmpColorSet_A")
-
-		vtxColors_Result = self.targetObjMesh.getVertexColors(self.baseColorSet)
-		self.targetObjMesh.setCurrentColorSetName(self.baseColorSet)
-
-		vtxCount = self.targetObjMesh.numVertices
-		# もし頂点数が変わっていたらvertexIndexListを作り直す
-		if not self.targetObjVtxCount == vtxCount:
-			self.targetObjVtxIdxList = xrange(vtxCount)
-
-
-		if self.baseColorSerRep == "RGB":
-			for x in xrange(vtxCount):
-				vtxColors_Result[x].r = vtxColors_R[x].r
-				vtxColors_Result[x].g = vtxColors_G[x].r
-				vtxColors_Result[x].b = vtxColors_B[x].r
-
-
-		elif self.baseColorSerRep == "A":
-			for y in xrange(vtxCount):
-				vtxColors_Result[y].r = 0
-				vtxColors_Result[y].g = 0
-				vtxColors_Result[y].b = 0
-				vtxColors_Result[y].a = vtxColors_A[y].r
-
-		else: # self.baseColorSerRep == "RGBA"
-			for z in xrange(vtxCount):
-				vtxColors_Result[z].r = vtxColors_R[z].r
-				vtxColors_Result[z].g = vtxColors_G[z].r
-				vtxColors_Result[z].b = vtxColors_B[z].r
-				vtxColors_Result[z].a = vtxColors_A[z].r
-
-		self.targetObjMesh.setVertexColors(vtxColors_Result, self.targetObjVtxIdxList)
 
 
 	#==============================================================================================
